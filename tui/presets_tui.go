@@ -89,7 +89,7 @@ func (m Model) UpdatePresets(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.view = MandelbrotView
 				m.mandelbortModel.paramsChanged = true
 			}
-		case "esc":
+		case "esc", "q":
 			m.view = MandelbrotView
 		}
 	}
