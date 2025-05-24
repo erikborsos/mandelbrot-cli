@@ -25,6 +25,11 @@ var mandelbrotKeyHandlers = map[KeyAction]KeyHandler{
 	Reset:        func(m *Model) { m.Reset(); m.mandelbortModel.paramsChanged = true },
 	ToggleImg:    func(m *Model) { m.toggleDisplayImg() },
 	Hide:         func(m *Model) { m.toggleHideMenu() },
+	SelectPreset: func(m *Model) {
+		m.view = PresetsView
+		h, v := docStyle.GetFrameSize()
+		m.presetsModel.list.SetSize(m.width-h, m.height-v)
+	},
 }
 
 var infoReplacer utils.ChainReplacer
@@ -40,7 +45,7 @@ type MandelbrotModel struct {
 	hideMenu      bool   // Wheter menu should be hidden
 }
 
-func InitMandelbrotModel() MandelbrotModel {
+func initMandelbrotModel() MandelbrotModel {
 	return MandelbrotModel{
 		hideMenu:      false,
 		paramsChanged: true,
@@ -66,15 +71,16 @@ func setupUIConfig() {
 		"s: Toggle smooth coloring",
 		"i/d: +/- max iterations",
 		"r: Reset to default",
+		"p: Select preset",
+		"m: Hide menu",
 		"t: Toggle image/text",
-		"h: Hide menu",
 		"q: Quit",
 	}
 
 	generateControls := func(disableNonToggle bool) string {
 		controlsArr := make([]string, len(helpText))
 		for i, line := range helpText {
-			controlsArr[i] = styleControlLine(line, disableNonToggle && !strings.HasPrefix(line, "t:") && !strings.HasPrefix(line, "q:"))
+			controlsArr[i] = styleControlLine(line, disableNonToggle && !strings.HasPrefix(line, "t:") && !strings.HasPrefix(line, "q:") && !strings.HasPrefix(line, "m:"))
 		}
 		return lipgloss.JoinVertical(lipgloss.Left, controlsArr...)
 	}
@@ -137,9 +143,10 @@ func (m Model) ViewMandelbrot() string {
 
 		menuContent := lipgloss.JoinVertical(
 			lipgloss.Left,
-			headerStyle.Render("Parameters"),
-			infoStr,
-			headerStyle.Render("Controls"),
+			"",
+			headerStyle.Render("Parameters:"),
+			lipgloss.NewStyle().Padding(0, 0, 1, 0).Render(infoStr),
+			headerStyle.Render("Controls:"),
 			helpStyle.Render(utils.Ternary(m.mandelbortModel.displayImg, controlsDisabled, controls)),
 			errorStr,
 		)
@@ -171,7 +178,7 @@ func (m Model) UpdateMandelbrot(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if action == Quit {
 						return m, tea.Quit
 					}
-					if !m.mandelbortModel.displayImg || action == ToggleImg {
+					if !m.mandelbortModel.displayImg || action == ToggleImg || action == Hide {
 						mandelbrotKeyHandlers[action](&m)
 					}
 					break
@@ -179,9 +186,6 @@ func (m Model) UpdateMandelbrot(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	}
-	if !m.mandelbortModel.displayImg && m.mandelbortModel.paramsChanged {
-		m.mandelbortModel.text = mandelbrot.BufferToString(mandelbrot.GenerateMandelbrotText(m.params))
-		m.mandelbortModel.paramsChanged = false
-	}
+	m.RedrawMandelbrot()
 	return m, nil
 }

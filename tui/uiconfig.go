@@ -15,27 +15,27 @@ const (
 
 // UIConfig holds styling and layout configuration
 type UIConfig struct {
-	MenuWidth     int
-	BorderColor   lipgloss.Color
-	AccentColor   lipgloss.Color
-	TextColor     lipgloss.Color
-	HeaderColor   lipgloss.Color
-	WhiteColor    lipgloss.Color
-	GrayColor     lipgloss.Color
-	DisabledColor lipgloss.Color
-	ErrorColor    lipgloss.Color
+	MenuWidth             int
+	BorderColor           lipgloss.Color
+	TextColor             lipgloss.Color
+	HeaderColor           lipgloss.Color
+	HeaderBackgroundColor lipgloss.Color
+	WhiteColor            lipgloss.Color
+	GrayColor             lipgloss.Color
+	DisabledColor         lipgloss.Color
+	ErrorColor            lipgloss.Color
 }
 
 var defaultUIConfig = UIConfig{
-	MenuWidth:     30,
-	BorderColor:   lipgloss.Color("63"),
-	AccentColor:   lipgloss.Color("39"),
-	TextColor:     lipgloss.Color("250"),
-	HeaderColor:   lipgloss.Color("67"),
-	WhiteColor:    lipgloss.Color("255"),
-	GrayColor:     lipgloss.Color("245"),
-	DisabledColor: lipgloss.Color("237"),
-	ErrorColor:    lipgloss.Color("196"), // Red
+	MenuWidth:             30,
+	BorderColor:           lipgloss.Color("#EE6FF8"),
+	TextColor:             lipgloss.Color("250"),
+	HeaderColor:           lipgloss.Color("230"),
+	HeaderBackgroundColor: lipgloss.Color("62"),
+	WhiteColor:            lipgloss.Color("255"),
+	GrayColor:             lipgloss.Color("245"),
+	DisabledColor:         lipgloss.Color("237"),
+	ErrorColor:            lipgloss.Color("196"), // Red
 }
 
 // Styling for the UI
@@ -59,10 +59,8 @@ var (
 
 	headerStyle = lipgloss.NewStyle().
 			Foreground(defaultUIConfig.HeaderColor).
-			Bold(true).
-			BorderStyle(lipgloss.NormalBorder()).
-			BorderBottom(true).
-			BorderForeground(defaultUIConfig.BorderColor)
+			Background(defaultUIConfig.HeaderBackgroundColor).
+			Bold(true)
 
 	panelStyle = lipgloss.NewStyle().
 			BorderStyle(lipgloss.RoundedBorder()).

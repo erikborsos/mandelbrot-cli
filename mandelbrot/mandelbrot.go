@@ -22,11 +22,14 @@ type MandelbrotParams struct {
 
 // Reset sets parameters back to default, keeping size intact
 func (p *MandelbrotParams) Reset() {
-	p.CenterRe = -0.5
-	p.CenterIm = 0
-	p.ZoomFactor = 1.0
-	p.MaxIter = 100
+	p.Overwrite(InitialMandelbrotParams())
+}
 
+func (p *MandelbrotParams) Overwrite(new MandelbrotParams) {
+	p.CenterRe = new.CenterRe
+	p.CenterIm = new.CenterIm
+	p.ZoomFactor = new.ZoomFactor
+	p.MaxIter = new.MaxIter
 }
 
 // Move moves the center of the view

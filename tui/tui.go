@@ -2,6 +2,7 @@ package tui
 
 import (
 	"mandel-cli/mandelbrot"
+	"slices"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -10,7 +11,7 @@ type View int
 
 const (
 	MandelbrotView View = iota
-	PresetView
+	PresetsView
 	SaveView
 )
 
@@ -30,7 +31,9 @@ const (
 	Reset        KeyAction = "reset"
 	ToggleImg    KeyAction = "toggle_img"
 	Quit         KeyAction = "quit"
+	ForceQuit    KeyAction = "force_quit"
 	Hide         KeyAction = "hide"
+	SelectPreset KeyAction = "select_preset"
 )
 
 type KeyHandler func(*Model)
@@ -48,8 +51,10 @@ var keyBindings = map[KeyAction][]string{
 	DecreaseIter: {"d"},
 	Reset:        {"r"},
 	ToggleImg:    {"t"},
-	Quit:         {"q", "ctrl+c"},
+	Quit:         {"q"},
+	ForceQuit:    {"ctrl+c"},
 	Hide:         {"m"},
+	SelectPreset: {"p"},
 }
 
 type Model struct {
@@ -57,13 +62,15 @@ type Model struct {
 	width           int                         // Terminal width
 	height          int                         // Terminal heighti
 	mandelbortModel MandelbrotModel
+	presetsModel    PresetsModel
 	view            View
 }
 
 func InitModel() Model {
 	return Model{
 		params:          mandelbrot.InitialMandelbrotParams(),
-		mandelbortModel: InitMandelbrotModel(),
+		mandelbortModel: initMandelbrotModel(),
+		presetsModel:    initPresetsModel(),
 		view:            MandelbrotView,
 	}
 }
@@ -82,7 +89,25 @@ func (m *Model) Reset() {
 	m.mandelbortModel.errorMsg = ""
 }
 
+func (m *Model) RedrawMandelbrot() {
+	if !m.mandelbortModel.displayImg && m.mandelbortModel.paramsChanged {
+		m.mandelbortModel.text = mandelbrot.BufferToString(mandelbrot.GenerateMandelbrotText(m.params))
+		m.mandelbortModel.paramsChanged = false
+	} else if m.mandelbortModel.displayImg && m.mandelbortModel.paramsChanged {
+		m.toggleDisplayImg()
+		m.toggleDisplayImg()
+		m.mandelbortModel.paramsChanged = false
+
+	}
+}
+
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if msg, ok := msg.(tea.KeyMsg); ok {
+		if slices.Contains(keyBindings[ForceQuit], msg.String()) {
+			return m, tea.Quit
+		}
+	}
+
 	if msg, ok := msg.(tea.WindowSizeMsg); ok {
 		m.width = msg.Width
 		m.height = msg.Height
@@ -97,6 +122,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.view == MandelbrotView {
 		return m.UpdateMandelbrot(msg)
+	} else if m.view == PresetsView {
+		return m.UpdatePresets(msg)
 	}
 	return m, nil
 }
@@ -104,6 +131,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) View() string {
 	if m.view == MandelbrotView {
 		return m.ViewMandelbrot()
+	} else if m.view == PresetsView {
+		return m.ViewPresets()
 	}
 	return ""
 }
