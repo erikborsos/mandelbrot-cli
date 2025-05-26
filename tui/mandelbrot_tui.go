@@ -11,6 +11,48 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	MoveLeft     KeyAction = "move_left"
+	MoveRight    KeyAction = "move_right"
+	MoveUp       KeyAction = "move_up"
+	MoveDown     KeyAction = "move_down"
+	ZoomIn       KeyAction = "zoom_in"
+	ZoomOut      KeyAction = "zoom_out"
+	CycleColor   KeyAction = "cycle_color"
+	ToggleSmooth KeyAction = "toggle_smooth"
+	IncreaseIter KeyAction = "increase_iter"
+	DecreaseIter KeyAction = "decrease_iter"
+	Reset        KeyAction = "reset"
+	ToggleImg    KeyAction = "toggle_img"
+	Quit         KeyAction = "quit"
+	ForceQuit    KeyAction = "force_quit"
+	Hide         KeyAction = "hide"
+	SelectPreset KeyAction = "select_preset"
+	Save         KeyAction = "save"
+)
+
+type KeyHandler func(*Model)
+
+var keyBindings = map[KeyAction][]string{
+	MoveLeft:     {"h", "left"},
+	MoveRight:    {"l", "right"},
+	MoveUp:       {"k", "up"},
+	MoveDown:     {"j", "down"},
+	ZoomIn:       {"+"},
+	ZoomOut:      {"-"},
+	CycleColor:   {"c"},
+	ToggleSmooth: {"s"},
+	IncreaseIter: {"i"},
+	DecreaseIter: {"d"},
+	Reset:        {"r"},
+	ToggleImg:    {"t"},
+	Quit:         {"q"},
+	ForceQuit:    {"ctrl+c"},
+	Hide:         {"m"},
+	SelectPreset: {"p"},
+	Save:         {"ctrl+s"},
+}
+
 var mandelbrotKeyHandlers = map[KeyAction]KeyHandler{
 	MoveLeft:     func(m *Model) { m.params.Move(-MoveStep, 0); m.mandelbortModel.paramsChanged = true },
 	MoveRight:    func(m *Model) { m.params.Move(MoveStep, 0); m.mandelbortModel.paramsChanged = true },
@@ -29,6 +71,11 @@ var mandelbrotKeyHandlers = map[KeyAction]KeyHandler{
 		m.view = PresetsView
 		h, v := docStyle.GetFrameSize()
 		m.presetsModel.list.SetSize(m.width-h, m.height-v)
+	},
+	Save: func(m *Model) {
+		m.view = PresetsView
+		m.saveModel = initSaveModel(m.params)
+		m.view = SaveView
 	},
 }
 

@@ -144,12 +144,17 @@ func BufferToString(buffer [][]string) string {
 	return mandelbrotBuilder.String()
 }
 
-// generateMandelbrotImage creates a PNG image of Mandelbrot
-// width and height can be larger than text buffer, but keep aspect ratio same.
 func GenerateMandelbrotImage(params MandelbrotParams) ([]byte, error) {
 	aspectRatio := float64(params.Height) / float64(params.Width)
 	imgWidth := 1920
 	imgHeight := int(float64(imgWidth) * aspectRatio)
+	return GenerateFixedMandelbrotImage(params, imgWidth, imgHeight)
+}
+
+// generateMandelbrotImage creates a PNG image of Mandelbrot
+// width and height can be larger than text buffer, but keep aspect ratio same.
+func GenerateFixedMandelbrotImage(params MandelbrotParams, imgWidth int, imgHeight int) ([]byte, error) {
+	aspectRatio := float64(params.Height) / float64(params.Width)
 	scale := 3.25 * params.ZoomFactor
 	minRe := params.CenterRe - scale/2
 	maxRe := params.CenterRe + scale/2
