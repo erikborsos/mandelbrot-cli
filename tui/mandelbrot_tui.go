@@ -119,6 +119,7 @@ func setupUIConfig() {
 		"i/d: +/- max iterations",
 		"r: Reset to default",
 		"p: Select preset",
+		"ctrl+s: Save image",
 		"m: Hide menu",
 		"t: Toggle image/text",
 		"q: Quit",

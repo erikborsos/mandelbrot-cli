@@ -58,7 +58,8 @@ func initSaveModel(params mandelbrot.MandelbrotParams) SaveModel {
 	}
 
 	// Initialize file path and color
-	filepathStr := "mandelbrot.png"
+	filepathStr := "./"
+	filenameStr := "mandelbrot"
 	colorStr := mandelbrot.ColorNames[params.ColorMode]
 
 	// Create form with resolution select
@@ -74,16 +75,18 @@ func initSaveModel(params mandelbrot.MandelbrotParams) SaveModel {
 				Key("color").
 				Options(colorOptions...).
 				Value(&colorStr),
-			huh.NewInput().
+			huh.NewFilePicker().
 				Title("File Path").
 				Key("filepath").
-				Value(&filepathStr).
+				DirAllowed(true).FileAllowed(false).
+				Value(&filepathStr),
+			huh.NewInput().
+				Title("File Name").
+				Key("filename").
+				Value(&filenameStr).
 				Validate(func(s string) error {
 					if s == "" {
 						return fmt.Errorf("file path cannot be empty")
-					}
-					if !strings.HasSuffix(strings.ToLower(s), ".png") {
-						return fmt.Errorf("file path must end with .png")
 					}
 					return nil
 				}),
@@ -129,6 +132,7 @@ func (m Model) UpdateSave(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.saveModel.completed = true
 			resolution := m.saveModel.form.GetString("resolution")
 			filepath := m.saveModel.form.GetString("filepath")
+			filename := m.saveModel.form.GetString("filepath")
 			color := m.saveModel.form.GetString("color")
 
 			// Find selected resolution's width and height
@@ -165,7 +169,11 @@ func (m Model) UpdateSave(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 
-			err = SaveImage(img, filepath)
+			file := filepath + "/" + filename
+			if !strings.HasSuffix(strings.ToLower(file), ".png") {
+				file = file + ".png"
+			}
+			err = SaveImage(img, file)
 			if err != nil {
 				m.saveModel.errorMsg = fmt.Sprintf("Error saving image: %v", err)
 				m.saveModel.completed = false
